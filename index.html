@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Word Collapse Demo</title>
+    <script>
+        window.addEventListener('load', function() {
+            var inputEl = document.getElementById('input');
+            var outputEl = document.getElementById('output');
+            var processBtn = document.getElementById('process');
+
+            processBtn.addEventListener('click', function() {
+                var inputLines = inputEl.value.split('\n');
+                var outputLines = collapse(inputLines);
+
+                outputEl.value = outputLines.join('\n');
+            });
+        });
+
+        function descendingSort(a, b) {
+            if (a > b) {
+                return -1;
+            }
+            if (a < b) {
+                return 1;
+            }
+            return 0;
+        }
+
+        function collapse(lines) {
+            lines.sort(descendingSort);
+            
+            var roots = [];
+            for (var i = 0; i < lines.length; i++) {
+                var entry = lines[i];
+
+                if (i === 0) {
+                    roots.push(entry);
+                    continue;
+                }
+
+                if (!lines[i - 1].startsWith(entry)) {
+                    roots.push(entry);
+                }
+            }
+
+            return roots;
+        }
+    </script>
+</head>
+<body>
+    <div>
+        <textarea name="input" id="input" cols="100" rows="20"></textarea>
+    </div>
+    <div>
+        <button id="process">Collapse</button>
+    </div>
+    <div>
+        <textarea name="output" id="output" cols="100" rows="20"></textarea>
+    </div>
+</body>
+</html>
