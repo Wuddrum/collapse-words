@@ -12,10 +12,10 @@
             var processBtn = document.getElementById('process');
 
             processBtn.addEventListener('click', function() {
-                var inputLines = inputEl.value.split('\n');
+                var inputLines = inputEl.value.toUpperCase().split('\n');
                 var outputLines = collapse(inputLines);
 
-                outputEl.value = outputLines.join('\n');
+                outputEl.value = outputLines.join('\n').toLowerCase();
             });
         });
 
@@ -42,7 +42,7 @@
                 }
 
                 var previousEntry = lines[i - 1];
-                if (!previousEntry.toUpperCase().startsWith(entry.toUpperCase())) {
+                if (!previousEntry.startsWith(entry)) {
                     roots.push(entry);
                 }
             }
