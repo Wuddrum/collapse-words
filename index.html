@@ -41,7 +41,8 @@
                     continue;
                 }
 
-                if (!lines[i - 1].startsWith(entry)) {
+                var previousEntry = lines[i - 1];
+                if (!previousEntry.toUpperCase().startsWith(entry.toUpperCase())) {
                     roots.push(entry);
                 }
             }
