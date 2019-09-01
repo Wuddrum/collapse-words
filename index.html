@@ -5,17 +5,84 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Word Collapse Demo</title>
+    <style>
+        label {
+            vertical-align: middle;
+        }
+
+        input {
+            vertical-align: middle;
+        }
+
+        #process {
+            margin-top: 14px;
+            margin-bottom: 16px;
+        }
+
+        #aggregate_counts {
+            margin-left: 24px;
+        }
+
+        #separator_settings {
+            display: inline-block;
+        }
+
+        .invisible {
+            display: none !important;
+        }
+
+        #input_separator_label {
+            margin-left: 24px;
+        }
+
+        #output_separator_label {
+            margin-left: 16px;
+        }
+
+        #input_separator,
+        #output_separator {
+            width: 32px;
+        }
+    </style>
     <script>
+        var inputSeparator = '	';
+        var outputSeparator = ',';
+        var aggregateCounts = false;
+
         window.addEventListener('load', function() {
             var inputEl = document.getElementById('input');
             var outputEl = document.getElementById('output');
             var processBtn = document.getElementById('process');
+            var aggregateCountsBtn = document.getElementById('aggregate_counts');
+            var aggreagateSettingsEl = document.getElementById('separator_settings');
+            var inputSeparatorEl = document.getElementById('input_separator');
+            var outputSeparatorEl = document.getElementById('output_separator');
 
             processBtn.addEventListener('click', function() {
                 var inputLines = inputEl.value.toUpperCase().split('\n');
                 var outputLines = collapse(inputLines);
 
                 outputEl.value = outputLines.join('\n').toLowerCase();
+            });
+
+            aggregateCountsBtn.addEventListener('change', function(t) {
+                aggregateCounts = !aggregateCounts;
+
+                if (aggregateCounts) {
+                    aggreagateSettingsEl.className = '';
+                } else {
+                    aggreagateSettingsEl.className = 'invisible';
+                }
+            });
+
+            inputSeparatorEl.value = inputSeparator;
+            inputSeparatorEl.addEventListener('change', function(t) {
+                inputSeparator = inputSeparatorEl.value;
+            });
+
+            outputSeparatorEl.value = outputSeparator;
+            outputSeparatorEl.addEventListener('change', function(t) {
+                outputSeparator = outputSeparatorEl.value;
             });
         });
 
@@ -35,19 +102,63 @@
             var roots = [];
             for (var i = 0; i < lines.length; i++) {
                 var entry = lines[i];
+                var count = 1;
 
-                if (i === 0) {
-                    roots.push(entry);
+                if (entry.trim().length === 0) {
                     continue;
                 }
 
-                var previousEntry = lines[i - 1];
-                if (!previousEntry.startsWith(entry)) {
-                    roots.push(entry);
+                if (aggregateCounts) {
+                    var parts = entry.split(inputSeparator);
+                    if (parts.length > 1) {
+                        count = +parts[parts.length - 1];
+                        if (isNaN(count)) {
+                            count = 1;
+                        }
+
+                        parts.pop();
+                        entry = parts.join(inputSeparator);
+                    }
+                }
+
+                if (i === 0) {
+                    var root = getRoot(entry, count, aggregateCounts);
+                    roots.push(root);
+                    continue;
+                }
+
+                var foundRoot = false;
+                for (var j = 0; j < roots.length; j++) {
+                    var root = roots[j];
+
+                    if (root.name.startsWith(entry)) {
+                        root.count += count;
+                        foundRoot = true;
+                    }
+                }
+
+                if (!foundRoot) {
+                    var root = getRoot(entry, count, aggregateCounts);
+                    roots.push(root);
                 }
             }
 
             return roots;
+        }
+
+        function getRoot(entry, count, showCount) {
+            return {
+                'name': entry,
+                'count': count,
+                toString: function() {
+                    if (showCount) {
+                        return this.name + outputSeparator + this.count;
+                    }
+                    else {
+                        return this.name;
+                    }
+                }
+            }
         }
     </script>
 </head>
@@ -57,6 +168,17 @@
     </div>
     <div>
         <button id="process">Collapse</button>
+
+        <input id="aggregate_counts" type="checkbox" name="aggreagate_counts" value="Aggregate Counts">
+        <label for="aggregate_counts">Aggregate Counts</label>
+
+        <div id="separator_settings" class="invisible">
+                <label id="input_separator_label" for="input_separator">Input Separator:</label>
+                <input id="input_separator" type="text" value="">
+
+                <label id="output_separator_label" for="output_separator">Output Separator:</label>
+                <input id="output_separator" type="text" value="">
+        </div>
     </div>
     <div>
         <textarea name="output" id="output" cols="100" rows="20"></textarea>
